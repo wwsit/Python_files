@@ -75,7 +75,10 @@ class KUGOUSpider():
         result = resp.text[resp.text.find('['):resp.text.rfind(']') + 1]
 
         # 转成Python类型
-        dict_content = json.loads(result)[0]['data']['song']
+        try:
+            dict_content = json.loads(result)[0]['data']['song']
+        except Exception as e:
+            dict_content = json.loads(result)
 
         while True:
             want_down_list = []  # 存放需要下载的歌词
@@ -84,6 +87,7 @@ class KUGOUSpider():
 
             n = 1
             for i in dict_content:
+
                 print('序号:%s  歌手:%s  歌名:%s' % (n, i['singername'], i['songname']))
                 n += 1
 
@@ -127,3 +131,7 @@ if __name__ == '__main__':
         user = KUGOUSpider(name_sing)
         user.run()
         print('结束程序请输入:y')
+
+
+
+
