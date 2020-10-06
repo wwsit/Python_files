@@ -1,97 +1,138 @@
-import js2py
+import os
+
 import requests
+import json
 import re
+from urllib import request
 
 
-def input_zh_en(word):
-    """自动识别中英文语言"""
+class KUGOUSpider():
 
-    # 提取第一个字符
-    first_word = word[0]
-    lower_word = first_word.lower()
+    def __init__(self, name):
 
-    if lower_word.encode('UTF-8').isalpha():
-        print('***翻译类型：英文--->中文***')
-        start = 'en'
-        end = 'zh'
-        return start, end
-    else:
-        print('***翻译类型：中文--->英文***')
-        start = 'zh'
-        end = 'en'
-        return start, end
+        self.url_js = 'https://searchrecommend.kugou.com/get/complex?callback=jQuery112409454911830803683_1596705923765&word={}'.format(
+            name)
+        self.get_donwn_url = 'https://www.kugou.com/song/#hash=694E7E4298626B2BCD36EB20E014CB90&album_id=38726380'
 
-
-class FanYiSpider():
-
-    def __init__(self, query, start, end):
-        self.query = query
-        self.start = start
-        self.end = end
-        self.url = 'https://fanyi.baidu.com/v2transapi'
+        self.list_data = []
         self.headers = {
-            "cookie": "PSTM=1585755055; BAIDUID=6A16072D0A6C3F4164481386F331EE45:FG=1; BIDUPSID=B929053A339387396FB97CD27AEDB008; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; H_PS_PSSID=30963_1447_31123_21091_30826_31187_30824_31163; delPer=0; PSINO=7; __yjsv5_shitong=1.0_7_83e8171872d436824f0e08a401f686e1c545_300_1585993564091_223.104.63.193_a8785d9e; Hm_lvt_afd111fa62852d1f37001d1f980b6800=1585995580; Hm_lpvt_afd111fa62852d1f37001d1f980b6800=1585995580; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1585969517,1585993643,1585993672,1585995580; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1585995580; yjs_js_security_passport=cd6ce785cd904d1df137d586f6eb9de2670cb61f_1585995477_js",
-            "user-agent": "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Mobile Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Mobile Safari/537.36"
         }
 
-    def execute_js(self):
-        """执行js文件"""
-        context = js2py.EvalJs()
-        with open('./fanyi.js', 'r', encoding='utf-8') as f:
-            context.execute(f.read())
-        sign = context.e(self.query)
+    def fun(self, blocknum, bs, size):
+        """显示下载的进度"""
 
-        data = {
-            "from": self.start,
-            "to": self.end,
-            "query": self.query,
-            "sign": sign,
-            "token": "09c51992657cb9fb60b6dd5cee144ddc",
-            "domain": "common",
-            "simple_means_flag": "3"
-        }
-        return data
+        percent = blocknum * bs / size
+        percent = percent * 100
+        int_data = int(percent)
+        if int_data % 20 == 0:
+            if int_data not in self.list_data:
+                print("download: %d%%" % (int_data))
+                self.list_data.append(int_data)
+
+    @staticmethod
+    def save_song(list_content, audio_name):
+        """保存歌词"""
+        for content in list_content:
+            content = content[str(content).rfind(']') + 1:]
+            with open('./music/' + audio_name + '.txt', 'a+', encoding='utf-8') as f:
+                f.write(content + '\n')
+
+    def down_music(self, url, lyrics_list, audio_name):
+        """下载音乐"""
+        if not os.path.exists('./music'):
+            os.mkdir('./music')
+        self.list_data = []
+        self.save_song(lyrics_list, audio_name)
+
+        request.urlretrieve(url=url, filename='./music/' + audio_name + '.mp3', reporthook=self.fun)
+
+    def get_music_url(self, want_down_list):
+        """获取音乐下载地址"""
+        for content in want_down_list:
+            hash = content[0]
+            album_id = content[1]
+            url = 'https://wwwapi.kugou.com/yy/index.php?r=play/getdata&hash=%s&album_id=%s&mid=c1f611ec72bf4d3e507608e6d5fde30e' % (
+                hash, album_id)
+            resp = requests.get(url, self.headers)
+
+            # 详细内容
+            dict_content = json.loads(resp.text)['data']
+
+            # 获取音频地址
+            url_mp3_download = dict_content['play_url']
+
+            # 获取作者和歌名
+            audio_name = dict_content['audio_name']
+            print(audio_name)
+
+            # 获取歌词
+            str_content = dict_content['lyrics']
+            list_content = str_content.split('\r\n')
+            del list_content[0:10]
+            del list_content[-1]
+            lyrics_list = list_content
+
+            self.down_music(url_mp3_download, lyrics_list, audio_name)
+
+    def get_hash_id(self):
+        """获取hash值和id值"""
+        resp = requests.get(url=self.url_js, headers=self.headers)
+        result = resp.text[resp.text.find('['):resp.text.rfind(']') + 1]
+
+        # 转成Python类型
+        try:
+            dict_content = json.loads(result)[0]['data']['song']
+        except Exception as e:
+            dict_content = json.loads(result)
+
+        while True:
+            want_down_list = []  # 存放需要下载的歌词
+            print('*' * 50)
+            print('请输入需要下载歌词的序号，0代表全部')
+
+            n = 1
+            for i in dict_content:
+                print('序号:%s  歌手:%s  歌名:%s' % (n, i['singername'], i['songname']))
+                n += 1
+
+            print('返回上一级，请输入:b')
+            num = input('请输入需要下载的数字:')
+            print('*' * 50)
+
+            if num == 'b':
+                break
+
+            # 判断是否为数字
+            result = re.findall('^\d+$', num)
+            if len(result) == 0:
+                print('格式不正确，请输入数字')
+                return
+
+            num = int(num)
+            if num != 0:
+                hash = dict_content[num - 1]['hash']
+                AlbumID = dict_content[num - 1]['AlbumID']
+                want_down_list.append([hash, AlbumID])
+                self.get_music_url(want_down_list)
+
+            if num == 0:
+                for content in dict_content:
+                    hash = content['hash']
+                    AlbumID = content['AlbumID']
+                    want_down_list.append([hash, AlbumID])
+                self.get_music_url(want_down_list)
 
     def run(self):
-        data = self.execute_js()
-        resp = requests.post(url=self.url, headers=self.headers, data=data)
-        # 将unicoude编码转成正常类型
-        # print(json.loads(resp.text))
-        print('翻译结果为：%s' % resp.json()['trans_result']['data'][0]['dst'])
-        print('*' * 66)
-        print(' ')
-        pass
+        self.get_hash_id()
 
 
-def main():
+if __name__ == '__main__':
+
     while True:
-
-        print('***默认自动翻译,如需中文转英文请输入:zh, 英文转中文请输入:en ***')
-        word = input('请输入单词:')
-        start = 'en'
-        end = 'zh'
-
-        if word == 'y':
-            print('程序结束')
+        name_sing = input('请输入歌手名称:')
+        if name_sing == 'y':
             break
-
-        if word == 'zh':
-            start = 'zh'
-            end = 'en'
-            print('***将进行:中文转成英文***')
-            word = input('请输入单词:')
-
-        elif word == 'en':
-            start = 'en'
-            end = 'zh'
-            print('***将进行:英文转成中文***')
-        else:
-            start, end = input_zh_en(word)
-        print('如需结束请输入:y,否则继续翻译')
-
-
-        user = FanYiSpider(word, start, end)
+        user = KUGOUSpider(name_sing)
         user.run()
-
-
-main()
+        print('结束程序请输入:y')
