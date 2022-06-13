@@ -1,0 +1,22 @@
+
+# tensorflow
+版本 tensorflow==1.2.0
+
+tensorflow(数据流图) = tensor 数据 + flow 流动
+
+# 设置告警的级别
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+# 图结构 = 数据+操作
+1.默认图
+    查看属性 .graph
+    默认图调用方法  .get_default_graph()
+2.创建图
+    new_g = tf.Graph()
+    with new_g.as_default()
+
+# Tensorboard 可视化操作
+ # 要保存的路径、要可视化的图
+ tf.summary.FileWriter("./tmp", graph=sess.graph)
+ # 开启可视化，在终端输入
+ tensorboard --logdir="./tmp"
