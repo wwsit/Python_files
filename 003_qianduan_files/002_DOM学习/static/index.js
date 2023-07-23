@@ -39,10 +39,10 @@ window.onload = function () {
         // 只有jquery语法能使用append方法
         $("#table_value").append(
             "<tr id='table'>" +
-            "<td><div id='tb_xuhao'>" + (i + 1) + "</div></td>" +
-            "<td><div id='tb_name'>" + result[i][0] + "</div></td>" +
-            "<td><div id='tb_age'>" + result[i][1] + "</div></td>" +
-            "<td><div id='tb_class'>" + result[i][2] + "</div></td>" +
+            "<td><div id='tb_xuhao' class='tb_1'>" + (i + 1) + "</div></td>" +
+            "<td><div id='tb_name' class='tb_1'>" + result[i][0] + "</div></td>" +
+            "<td><div id='tb_age' class='tb_1'>" + result[i][1] + "</div></td>" +
+            "<td><div id='tb_class' class='tb_1'>" + result[i][2] + "</div></td>" +
             "</tr>"
         )
     }
