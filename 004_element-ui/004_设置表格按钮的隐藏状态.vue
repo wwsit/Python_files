@@ -8,7 +8,7 @@
 
                 <el-popconfirm width="300" confirm-button-text="确认" cancel-button-text="取消" confirm-button-type="danger"
                     cancel-button-type="success" title="确认删除这条数据" v-if="show_delete_button">
-                    <!-- 如果想隐藏删除按钮，v-if 需要放在最外层 -->
+                    <!-- 有使用到插槽的功能，如果想隐藏删除按钮，v-if 需要放在最外层 -->
                     <template #reference>
                         <el-button size="small" type="danger">删除</el-button>
                     </template>
