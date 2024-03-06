@@ -77,6 +77,6 @@
   
   .button6{
     float:right;
-    margin-right: 5%;
+    margin-right: 20%;
   }
   </style>
