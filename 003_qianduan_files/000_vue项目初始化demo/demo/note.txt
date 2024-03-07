@@ -1,0 +1,347 @@
+# 更新脚手架
+npm i -g @vue/cli
+
+来安装vue-router
+npm install vue-router -g
+
+# npm 集
+https://blog.csdn.net/weixin_39901412/article/details/111678508
+
+npm list -g
+npm i vue-router@3.2.0   # router不易安裝太高版本
+npm i axios --save
+
+npm install
+# 创建项目
+vue create 项目名
+cd 项目名
+npm run serve 
+
+1.脚手架下载下来的项目稍微配置一下
+// node_modules/@vue/cli-service/lib/commands/serve.js   在host:'0.0.0.0'后面修改为‘127.0.0.1’ 
+浏览器自动打开
+        在package.json文件中
+        "scripts": {
+         "serve": "vue-cli-service serve --open",
+          "build": "vue-cli-service build",
+          "lint": "vue-cli-service lint"
+        },
+
+2关闭eslint校验工具
+创建vue.config.js文件：需要对外暴露
+module.exports = {
+   lintOnSave:false,
+}
+
+3. 使用组件的步骤(非路由组件)
+- 创建或者定义组件
+- 引入
+- 注册
+- 使用
+
+
+    $route:一般获取路由信息 路径、query、params等等
+    $router:一般进行编程式导航进行路由跳转push replace
+
+
+4.路由组件
+cnpm install --save vue-router
+
+# index.js
+import { createRouter, createWebHistory } from 'vue-router'
+Home 
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/',
+      component: () => import('../pages/Home/index.vue')
+    },
+    {
+      path: '/login',
+      component: () => import('../pages/Login/index.vue')
+    }
+  ]
+})
+
+export default router
+
+# main.js
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+
+const app = createApp(App)
+app.use(router)
+app.mount('#app')
+
+
+在APP.vue中加入
+<router-view></router-view>
+
+
+模板
+<template>
+    
+</template>
+
+<script>
+
+export default {
+    name: '',
+   
+}
+</script>
+
+<style scoped>
+
+
+</style>
+
+
+# 全局组件
+
+
+# store使用
+
+
+
+
+import home from "./home";
+import login from "./login";
+
+# store/home.js
+
+// 用来定义数据，这里可以设置数据的默认数据
+const state = {a:2}
+
+// 通常为修改state数据而使用
+const mutatuin = {}
+
+// 当你的数据是需要发送请求获取时
+const actions = {}
+
+// 用来处理数据，对state中的数据进行处理
+const getters = {}
+
+export default {
+    state,
+    mutations,
+    actions,
+    getters
+}
+
+# store/index.js
+
+//  准备引入 vuex
+import { createStore } from 'vuex'
+ 
+const store = createStore({
+
+    modules:{
+        home,
+        login
+    }
+})
+export default store
+
+
+# main.js
+
+import store from "@/store/index.js";
+createApp(App)..use(store).mount('#app')
+
+
+
+// 全局组件注册方法：
+在 main.js中导入全局组件
+ import GlobComponent from '@/pages/Home/Glob/index.vue
+ 注册组件
+# 给组件起名称，组件名称
+ createApp(App).component("Glob_Component",GlobComponent)
+
+# 使用全局组件
+<Glob_Component></Glob_Component>
+
+
+
+
+
+## cookie操作
+https://www.csdn.net/tags/NtDakg5sNzU1NTYtYmxvZwO0O0OO0O0O.html
+
+
+
+
+
+正则语句不用加引号
+正确写法：     let re = /^.+@[A-Z0-9a-z]+\.[a-zA-Z]+$/;
+错误写法       let re = "/^.+@[A-Z0-9a-z]+\.[a-zA-Z]+$/";
+
+
+### 函数中调用另外一个函数
+
+如：在vue的methods中一个函数调用另外一个函数
+this.$options.methods.函数名字();
+（这样的话要注意，this的指向已经指向了这个实例而不是指向全局，所以可能会报错说bind没有函数绑定）
+要this指向全局实例，要在后面加.bind（this） 如：this.$options.methods.函数名.bind(this)()
+
+# 传参
+ this.$options.methods.hiddenButton.bind(this)(hidden)
+
+### 定时器
+
+ let num = 10
+            var t = setInterval(() => {
+                if (num == 0) {
+                    // 如果计时器到最后, 清除计时器对象
+                    clearInterval(t);
+                    console.log(2)
+                } else {
+                    num -= 1;
+                    // 展示倒计时信息
+                    console.log(1)
+                }
+            }, 1000)
+
+
+
+
+# json
+fnGetData:function(num){
+      let token = localStorage.token;
+      this.axios.get(cons.apis + '/permission/perms/', {
+          headers: {
+            'Authorization': 'JWT ' + token
+          },
+          responseType: 'json',
+          params:{
+            page:num,
+            pagesize:this.pagesize,
+            ordering:"id"
+          }
+      })
+      .then(dat=>{
+          //console.log(dat);
+          this.aAuthorList = dat.data.lists;
+          this.page = dat.data.page;
+          this.pages = dat.data.pages;
+      }).catch(err=>{
+         console.log(err);
+      });
+    },   
+
+
+设置cookie
+main.js 
+import { createApp } from 'vue'
+import VueCookies from 'vue-cookies'
+ 
+const app = createApp(App)
+app.config.globalProperties.$cookies = VueCookies
+
+文件中
+import cookie from 'vue-cookie'
+this.$cookies.set("token", response.data.userinfo.token,"7d")
+
+
+https://blog.csdn.net/qq_35250826/article/details/106111768?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522166962750516800186516273%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=166962750516800186516273&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-106111768-null-null.142^v66^control,201^v3^control_2,213^v2^t3_esquery_v2&utm_term=vue%20cookie%E8%AE%BE%E7%BD%AE%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4&spm=1018.2226.3001.4187
+
+
+
+# 表单
+import qs from 'qs'
+let data = { username: this.username, "password1": this.password1, "password2": this.password2, "email": this.email, "email_code": this.email_code }
+let option = {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        data: qs.stringify(data),
+        url: constant_value.url_prefix + '/fund/api/register/api/register',
+}
+axios(option).then((response) => {
+        if (response.data.info == "success") {
+
+        localStorage.setItem("token", "12121value");
+        this.$router.push("/")
+        } else {
+        console.log(response)
+        console.log("创建失败")
+        }
+
+
+setTimeout(函数名，等待时间毫秒)
+setTimeout(() => {
+        // 调用stop停止旋转并传递中奖索引
+        let index = res.data.data.index
+        this.$refs.myLucky.stop(index)
+              }, 3000)
+
+
+if (this.pass_username_flag && this.pass_password_flag) {
+        axios({
+                url: constantdict.url_prefix +'/fund/api/login',
+                method: 'post',
+
+                data: {
+                username: this.username,
+                password: this.password,
+                remember: this.remember
+                }
+        }).then((res) => {
+
+                console.log(res.data)
+                Cookies.set("fund_username", this.username)
+                this.$router.push("/");
+        }
+        )
+                .catch(error => {
+                console.log(error.response);
+                })
+        }
+
+
+
+.js文件
+
+
+// 函数名得在 const前使用 export,进行对外暴露
+export const pageTips = (message) => {
+    ElNotification({
+        title: 'Error',
+        message: message,
+        duration: 5000,
+        type: "error"
+    })
+}
+
+export const test = () => {
+    console.log("2222")
+}
+
+const data = 1111
+
+export default {
+    data
+}
+
+
+.vue 
+
+<script>
+import  {pageTips,test}  from '@/common_methods/common'
+import  data from '@/common_methods/common.js'
+// 如果导入的是函数得使用 {} 
+
+ mounted(){
+        console.log(data)
+        test()
+        pageTips("21111")
+    },
+</script>
+
+
+
+element-ui 表头设置
+:header-cell-style="{background:'#F2F6FC',color:'#000000'}"
