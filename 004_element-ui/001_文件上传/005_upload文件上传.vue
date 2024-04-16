@@ -25,8 +25,8 @@ export default {
     return {
       fileList: [],
       upload: "",
-      add_error_flag: false,
-      add_fast_use_appendix: false,
+      add_download_url:"",
+
     }
   },
 
@@ -54,7 +54,7 @@ export default {
     handleSuccess(file, fileList) {
       let filename = file.raw.name
       if (filename.indexOf(".png") != -1) {
-        this.upload = file.raw
+        this.upload = file.raw  // 以文件对象的形式传给后端
 
         let formData = new FormData()
         formData.append('files', this.upload)
@@ -66,7 +66,6 @@ export default {
           data: formData,
         }).then((res) => {
           if (res.data.result == "success") {
-            this.add_fast_use_appendix = "false"
           }
           else {
             console.log(res)
@@ -94,7 +93,7 @@ export default {
     },
 
 
-    // 点击上传列表中的文件
+    // 点击上传列表中的文件，进行下载
     handleFile(files) {
       window.open(this.add_download_url, '_blank');
     },
