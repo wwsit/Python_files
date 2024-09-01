@@ -32,14 +32,6 @@ export default {
 
 
 <style>
-/*
-块元素：
-行内元素：
-内联块元素：
-
-
-*/
-
 .first {
   margin-top: 5%;
   display: flex;
